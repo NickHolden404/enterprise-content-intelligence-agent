@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Content Intelligence Agent - Demo</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Lucide React icons as inline SVG components
+        const Send = () => (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+        );
+
+        const Search = () => (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+            </svg>
+        );
+
+        const FileText = () => (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+        );
+
+        const Database = () => (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+            </svg>
+        );
+
+        const Code = () => (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+        );
+
+        const Brain = () => (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"></path>
+                <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"></path>
+            </svg>
+        );
+
+        const Activity = () => (
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+        );
+
+        const CheckCircle = () => (
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+        );
+
+        const Clock = () => (
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+        );
+
+        const Zap = () => (
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+        );
+
+        const EnterpriseAgentDemo = () => {
+            const [query, setQuery] = useState('');
+            const [messages, setMessages] = useState([]);
+            const [isProcessing, setIsProcessing] = useState(false);
+            const [activeAgents, setActiveAgents] = useState([]);
+            const [metrics, setMetrics] = useState({
+                queriesProcessed: 0,
+                avgResponseTime: 0,
+                sourcesSearched: 0,
+                accuracy: 95
+            });
+
+            const agentTypes = [
+                { id: 'search', name: 'Web Search Agent', icon: Search, color: 'bg-blue-500' },
+                { id: 'document', name: 'Document Agent', icon: FileText, color: 'bg-green-500' },
+                { id: 'data', name: 'Data Analysis Agent', icon: Database, color: 'bg-purple-500' },
+                { id: 'code', name: 'Code Agent', icon: Code, color: 'bg-orange-500' },
+                { id: 'memory', name: 'Memory Agent', icon: Brain, color: 'bg-pink-500' }
+            ];
+
+            const sampleQueries = [
+                "Analyze our Q3 sales data and compare with industry benchmarks",
+                "Find all documentation related to our API authentication flow",
+                "What are the latest trends in cloud security that affect our infrastructure?",
+                "Summarize customer feedback from the past month and identify key themes"
+            ];
+
+            const simulateAgentExecution = async (userQuery) => {
+                setIsProcessing(true);
+                const usedAgents = [];
+                
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                if (userQuery.toLowerCase().includes('data') || userQuery.toLowerCase().includes('sales')) {
+                    usedAgents.push('data');
+                }
+                if (userQuery.toLowerCase().includes('documentation') || userQuery.toLowerCase().includes('api')) {
+                    usedAgents.push('document');
+                }
+                if (userQuery.toLowerCase().includes('trends') || userQuery.toLowerCase().includes('latest')) {
+                    usedAgents.push('search');
+                }
+                if (userQuery.toLowerCase().includes('feedback') || userQuery.toLowerCase().includes('summarize')) {
+                    usedAgents.push('document', 'data');
+                }
+                if (usedAgents.length === 0) {
+                    usedAgents.push('search', 'memory');
+                }
+                
+                if (!usedAgents.includes('memory')) {
+                    usedAgents.push('memory');
+                }
+
+                setActiveAgents(usedAgents);
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                const response = generateResponse(userQuery, usedAgents);
+                
+                setMessages(prev => [...prev, 
+                    { type: 'user', content: userQuery },
+                    { type: 'agent', content: response, agents: usedAgents }
+                ]);
+
+                setMetrics(prev => ({
+                    queriesProcessed: prev.queriesProcessed + 1,
+                    avgResponseTime: Math.round((prev.avgResponseTime * prev.queriesProcessed + 2.3) / (prev.queriesProcessed + 1) * 10) / 10,
+                    sourcesSearched: prev.sourcesSearched + usedAgents.length + Math.floor(Math.random() * 3),
+                    accuracy: 95
+                }));
+
+                setActiveAgents([]);
+                setIsProcessing(false);
+            };
+
+            const generateResponse = (query, agents) => {
+                const responses = {
+                    data: "Analyzed Q3 data showing 23% YoY growth, outpacing industry average of 15%.",
+                    document: "Retrieved 12 relevant documents from knowledge base with 95% confidence match.",
+                    search: "Found 8 recent articles and reports from authoritative sources.",
+                    code: "Executed analysis pipeline and generated visualization.",
+                    memory: "Retrieved context from 3 previous related conversations."
+                };
+
+                let response = "**Analysis Complete**\n\n";
+                response += "I've coordinated with multiple specialized agents to gather comprehensive insights:\n\n";
+                
+                agents.forEach(agentId => {
+                    const agent = agentTypes.find(a => a.id === agentId);
+                    if (agent && responses[agentId]) {
+                        response += `✓ **${agent.name}**: ${responses[agentId]}\n`;
+                    }
+                });
+
+                response += "\n**Key Insights:**\n";
+                response += "- All sources cross-referenced and validated\n";
+                response += "- High confidence in findings (95%+ accuracy)\n";
+                response += "- Full traceability maintained for audit purposes\n";
+                response += "\n*[Session state preserved for follow-up questions]*";
+
+                return response;
+            };
+
+            const handleSubmit = () => {
+                if (query.trim() && !isProcessing) {
+                    simulateAgentExecution(query);
+                    setQuery('');
+                }
+            };
+
+            const handleKeyPress = (e) => {
+                if (e.key === 'Enter' && !isProcessing && query.trim()) {
+                    handleSubmit();
+                }
+            };
+
+            const loadSampleQuery = (sampleQuery) => {
+                setQuery(sampleQuery);
+            };
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-6">
+                    <div className="max-w-7xl mx-auto">
+                        {/* Header */}
+                        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 mb-6 border border-white/20">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h1 className="text-3xl font-bold text-white mb-2">
+                                        Enterprise Content Intelligence Agent
+                                    </h1>
+                                    <p className="text-blue-200">
+                                        Multi-agent system for intelligent enterprise research & analysis
+                                    </p>
+                                </div>
+                                <Activity />
+                            </div>
+                        </div>
+
+                        {/* Metrics Dashboard */}
+                        <div className="grid grid-cols-4 gap-4 mb-6">
+                            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-blue-200 text-sm">Queries Processed</p>
+                                        <p className="text-3xl font-bold text-white">{metrics.queriesProcessed}</p>
+                                    </div>
+                                    <CheckCircle />
+                                </div>
+                            </div>
+                            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-blue-200 text-sm">Avg Response Time</p>
+                                        <p className="text-3xl font-bold text-white">{metrics.avgResponseTime}s</p>
+                                    </div>
+                                    <Clock />
+                                </div>
+                            </div>
+                            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-blue-200 text-sm">Sources Searched</p>
+                                        <p className="text-3xl font-bold text-white">{metrics.sourcesSearched}</p>
+                                    </div>
+                                    <Search />
+                                </div>
+                            </div>
+                            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-blue-200 text-sm">Accuracy Score</p>
+                                        <p className="text-3xl font-bold text-white">{metrics.accuracy}%</p>
+                                    </div>
+                                    <Zap />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-6">
+                            {/* Main Chat Interface */}
+                            <div className="col-span-2 bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 flex flex-col h-[600px]">
+                                <div className="p-4 border-b border-white/20">
+                                    <h2 className="text-xl font-semibold text-white">Research Assistant</h2>
+                                </div>
+                                
+                                {/* Messages */}
+                                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                                    {messages.length === 0 && (
+                                        <div className="text-center py-12">
+                                            <div className="mx-auto mb-4"><Brain /></div>
+                                            <p className="text-blue-200 mb-4">
+                                                Ask me anything about your enterprise data, documents, or research needs
+                                            </p>
+                                            <div className="space-y-2">
+                                                <p className="text-sm text-blue-300 mb-2">Try these sample queries:</p>
+                                                {sampleQueries.map((sq, idx) => (
+                                                    <button
+                                                        key={idx}
+                                                        onClick={() => loadSampleQuery(sq)}
+                                                        className="block w-full text-left px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm text-blue-200 transition-colors"
+                                                    >
+                                                        {sq}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                    
+                                    {messages.map((msg, idx) => (
+                                        <div key={idx} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                            <div className={`max-w-[80%] rounded-xl p-4 ${
+                                                msg.type === 'user' 
+                                                    ? 'bg-blue-600 text-white' 
+                                                    : 'bg-white/10 text-white border border-white/20'
+                                            }`}>
+                                                {msg.type === 'agent' && msg.agents && (
+                                                    <div className="flex flex-wrap gap-2 mb-3">
+                                                        {msg.agents.map(agentId => {
+                                                            const agent = agentTypes.find(a => a.id === agentId);
+                                                            const Icon = agent.icon;
+                                                            return (
+                                                                <div key={agentId} className={`${agent.color} px-2 py-1 rounded-full flex items-center gap-1 text-xs`}>
+                                                                    <Icon />
+                                                                    <span>{agent.name.split(' ')[0]}</span>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+                                                <div className="whitespace-pre-line">{msg.content}</div>
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    {isProcessing && (
+                                        <div className="flex justify-start">
+                                            <div className="bg-white/10 border border-white/20 rounded-xl p-4 max-w-[80%]">
+                                                <div className="flex items-center gap-2 text-blue-200">
+                                                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-400 border-t-transparent"></div>
+                                                    <span>Processing with {activeAgents.length} agents...</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Input */}
+                                <div className="p-4 border-t border-white/20">
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={query}
+                                            onChange={(e) => setQuery(e.target.value)}
+                                            onKeyPress={handleKeyPress}
+                                            placeholder="Ask about data, documents, or research..."
+                                            className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:outline-none focus:border-blue-400"
+                                            disabled={isProcessing}
+                                        />
+                                        <button
+                                            onClick={handleSubmit}
+                                            disabled={isProcessing || !query.trim()}
+                                            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white rounded-lg px-6 py-3 transition-colors flex items-center gap-2"
+                                        >
+                                            <Send />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Agent Status Panel */}
+                            <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-4">
+                                <h3 className="text-lg font-semibold text-white mb-4">Agent Network</h3>
+                                <div className="space-y-3">
+                                    {agentTypes.map(agent => {
+                                        const Icon = agent.icon;
+                                        const isActive = activeAgents.includes(agent.id);
+                                        return (
+                                            <div 
+                                                key={agent.id}
+                                                className={`p-3 rounded-lg border transition-all ${
+                                                    isActive 
+                                                        ? 'bg-white/20 border-white/40 shadow-lg' 
+                                                        : 'bg-white/5 border-white/10'
+                                                }`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`${agent.color} p-2 rounded-lg`}>
+                                                        <Icon />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <p className="text-white font-medium text-sm">{agent.name}</p>
+                                                        <p className="text-blue-200 text-xs">
+                                                            {isActive ? 'Processing...' : 'Ready'}
+                                                        </p>
+                                                    </div>
+                                                    {isActive && (
+                                                        <div className="animate-pulse w-2 h-2 bg-green-400 rounded-full"></div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Features List */}
+                                <div className="mt-6 pt-4 border-t border-white/20">
+                                    <h4 className="text-white font-semibold mb-3 text-sm">System Capabilities</h4>
+                                    <div className="space-y-2 text-xs text-blue-200">
+                                        <div className="flex items-center gap-2">
+                                            <CheckCircle />
+                                            <span>Multi-agent orchestration</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <CheckCircle />
+                                            <span>Parallel processing</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <CheckCircle />
+                                            <span>Session memory</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <CheckCircle />
+                                            <span>Context engineering</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <CheckCircle />
+                                            <span>Full observability</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <CheckCircle />
+                                            <span>Tool integration (MCP)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<EnterpriseAgentDemo />, document.getElementById('root'));
+    </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+venv/
+env/
+ENV/
+.env
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+.vscode/
+.idea/# Virtual environment - NEVER commit this!
+venv/
+env/
+ENV/
+
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# OS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
