@@ -11,7 +11,7 @@ This guide covers deployment options, configuration, and usage examples for the 
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/yourusername/enterprise-agent.git
+git clone https://github.com/NickHolden404/enterprise-content-intelligence-agent.git
 cd enterprise-agent
 
 # 2. Create virtual environment
@@ -588,7 +588,6 @@ For issues or questions:
 
 1. Check the [troubleshooting guide](#-troubleshooting)
 2. Review [GitHub Issues](https://github.com/yourusername/enterprise-agent/issues)
-3. Contact: [your-email@example.com]
 
 ---
 
